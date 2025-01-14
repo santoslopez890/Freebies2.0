@@ -41,6 +41,17 @@ public class Item implements Serializable {
     @Column(name = "image")
     private String image;
 
+    public String getZipcode() {
+        return zipcode;
+    }
+
+    public void setZipcode(String zipcode) {
+        this.zipcode = zipcode;
+    }
+
+    @Column(name = "zipcode")
+    private String zipcode;
+    //ADD ZIP CODE
 
 
 
