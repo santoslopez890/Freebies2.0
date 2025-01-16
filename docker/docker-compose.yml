@@ -10,9 +10,22 @@ services:
       # port exposed : mysql port running inside container
       - "3306:3306"
     volumes:
-        - ./data.sql:/docker-entrypoint-initdb.d/data.sql
+      - ./data.sql:/docker-entrypoint-initdb.d/data.sql
     networks:
       - app-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  hub:
+    image: selenium/hub
+    container_name: selenium_hub
+    build: docker run -d -p 4442-4444:4442-4444 --net grid --name selenium-hub selenium/hub:latest
+  firefox:
+    image: selenium/node-firefox
+    container_name: firefox_node
+    build: docker run -d --net grid -e SE_EVENT_BUS_HOST=selenium-hub --shm-size="2g" -e SE_EVENT_BUS_PUBLISH_PORT=4442 -e SE_EVENT_BUS_SUBSCRIBE_PORT=4443 selenium/node-firefox:latest
   app:
     build:
       context: .
@@ -22,7 +35,8 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: password
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     networks:
