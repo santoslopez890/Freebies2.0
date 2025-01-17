@@ -2,10 +2,7 @@ package com.Freebies.BackendCode.Service;
 
 import com.Freebies.BackendCode.Enum.Links;
 import com.Freebies.BackendCode.Model.RawItem;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,35 +57,43 @@ public class Scraper {
         //getting items
         System.out.println("scraping items");
         List<WebElement> WebElement2 =driver.findElements(By.cssSelector(".x1i10hfl.xjbqb8w.x1ejq31n.xd10rxx.x1sy0etr.x17r0tee.x972fbf.xcfux6l.x1qhh985.xm0m39n.x9f619.x1ypdohk.xt0psk2.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.x1sur9pj.xkrqix3.x1lku1pv"));
-        for (WebElement element : WebElement2) {
-            RawItem item=new RawItem();
-            item.setCategory(category);
-            String[] lines = element.getText().split("\n");
-            try {
-                item.setPrice(lines[0]);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // Handle ArrayIndexOutOfBoundsException
+        System.out.println("found web element");
+            for (WebElement element : WebElement2) {
+                try {
+                    System.out.println("found element in element");
+                    RawItem item = new RawItem();
+                    item.setCategory(category);
+                    String[] lines = element.getText().split("\n");
+                    try {
+                        item.setPrice(lines[0]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        // Handle ArrayIndexOutOfBoundsException
+                    }
+                    try {
+                        item.setName(lines[1]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                    }
+                    try {
+                        item.setLocation(lines[2]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                    }
+                    item.setDescription(element.getDomProperty("href"));
+                    String outerHtml = element.getDomProperty("outerHTML");
+                    // Extract the image link using a regular expression
+                    Pattern imgPattern = Pattern.compile("<img\\s+.*?src\\s*=\\s*['\"]([^'\"]+)['\"].*?>");
+                    Matcher imgMatcher = imgPattern.matcher(outerHtml);
+                    if (imgMatcher.find()) {
+                        String imageLink = imgMatcher.group(1);
+                        imageLink = imageLink.replace("&amp;", "&");
+                        item.setImage(imageLink);
+                        itemArrayList.add(item);
+                    }
+
+                } catch (StaleElementReferenceException e) {
+                    System.out.println("stale element caught");
+                }
             }
-            try {
-                item.setName(lines[1]);
-            }catch (ArrayIndexOutOfBoundsException e){
-            }
-            try {
-                item.setLocation(lines[2]);
-            }catch (ArrayIndexOutOfBoundsException e){
-            }
-            item.setDescription(element.getDomProperty("href"));
-            String outerHtml = element.getDomProperty("outerHTML");
-            // Extract the image link using a regular expression
-            Pattern imgPattern = Pattern.compile("<img\\s+.*?src\\s*=\\s*['\"]([^'\"]+)['\"].*?>");
-            Matcher imgMatcher = imgPattern.matcher(outerHtml);
-            if (imgMatcher.find()) {
-                String imageLink = imgMatcher.group(1);
-                imageLink = imageLink.replace("&amp;", "&");
-                item.setImage(imageLink);
-                itemArrayList.add(item);
-            }
-        }
+
         return itemArrayList;
     }
 }
