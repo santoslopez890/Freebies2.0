@@ -8,6 +8,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,21 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Service
 public class Scraper {
-    static RemoteWebDriver driver;
+    @Autowired
+    private final RemoteWebDriver driver;
 
-
-    public static List<RawItem> scrapeData(String category, String zipCode)throws InterruptedException{
-        String remoteUrl="http://localhost:4444";
-        FirefoxOptions optionsf=new FirefoxOptions();
-        optionsf.addArguments("--ignore-ssl-errors=yes");
-        optionsf.addArguments("--ignore-certificate-errors");
-        try {
-            driver = new RemoteWebDriver(new URL(remoteUrl), optionsf);
-        }catch (MalformedURLException e){
-
-        }
+    @Autowired
+    public Scraper(RemoteWebDriver driver) {
+        this.driver = driver;
+    }
+    public List<RawItem> scrapeData(String category, String zipCode)throws InterruptedException{
         //list for my items
         List<RawItem>  itemArrayList=new ArrayList<>();
         System.out.println("going to url");
